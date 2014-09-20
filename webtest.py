@@ -20,13 +20,14 @@ def snap(filename):
     with picamera.PiCamera() as camera:
         camera.resolution = (1024, 768)
         # Camera warm-up time
-        time.sleep(2)
-        camera.capture(SNAPSHOT_DIR +filename)
+        sleep(2)
+        camera.capture(filename)
     camLock = False
     return True
 
 @app.route("/",methods=['GET', 'POST'])
 def home():
+    print SNAPSHOT_DIR
     templateData = {
       'images' : getImageList(),
     }
@@ -36,12 +37,11 @@ def home():
     if request.method == 'POST':
         if camLock:
             return render_template('home.html', **templateData)
-        filename = now.strftime("image-%Y-%m-%dT%H:%m:%s.jpg")
-        newfile = "latest.jpg"
+        filename = os.path.join(SNAPSHOT_DIR,now.strftime("image-%Y-%m-%dT%H:%m:%s.jpg"))
+        newfile = os.path.join(SNAPSHOT_DIR,"latest.jpg")
         snap(filename)
-        shutil.copy(SNAPSHOT_DIR+filename,SNAPSHOT_DIR+newfile)
-        templateData['filename'] = filename
-
+        shutil.copy(filename,newfile)
+        templateData['filename']= "latest.jpg"
     else:
         if len(images)>0:
             templateData['filename'] = images[0]
